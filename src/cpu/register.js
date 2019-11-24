@@ -41,7 +41,7 @@ export default class Register {
         return false;
       }
     }
-    if (!(0 <= name && name < 8)) return false;
+    if (!(0 <= name && name < 16)) return false;
     this[name] = value;
     return true;
   }
