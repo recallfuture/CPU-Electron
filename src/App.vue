@@ -2,9 +2,9 @@
   <div id="app">
     <button @click="step">step</button>
 
-    <p>pc: 0x{{ cpu.pc.toString(16) }}</p>
-    <p>bus: 0x{{ cpu.bus.toString(16) }}</p>
-    <p>ir: 0x{{ cpu.ir.toString(16) }}</p>
+    <p>pc: 0x{{ formatNum(cpu.pc, 16, 4) }}</p>
+    <p>bus: 0x{{ formatNum(cpu.bus, 16, 4) }}</p>
+    <p>ir: 0x{{ formatNum(cpu.ir, 16, 4) }}</p>
 
     <p>
       状态位:
@@ -20,15 +20,21 @@
         :key="index"
         class="register-lable"
       >
-        {{ r }}: {{ cpu.register.get(r).toString(16) }}
+        {{ r }}: {{ formatNum(cpu.register.get(r), 16, 2) }}
       </label>
     </p>
 
     <label>
       指令存储器:
-      <p v-for="(i, index) in 10" :key="index" class="register-lable">
-        0x{{ (index * 4).toString(16) }}:
-        {{ cpu.iMemory.readInt(index * 4).toString(2) }}
+      <p
+        v-for="(data, index) in cpu.iMemory.data"
+        :key="index"
+        class="register-lable"
+      >
+        0x{{ formatNum(index * 4, 16, 4) }}:
+        <label v-for="(byte, index) in data" :key="index">
+          {{ formatNum(byte, 2, 4) }}
+        </label>
         {{ instruction[index] }}
       </p>
     </label>
@@ -36,8 +42,7 @@
 </template>
 
 <script>
-import Cpu from "./cpu/cpu";
-import Constant from "./cpu/constant";
+import { Cpu, Constant } from "./cpu";
 
 export default {
   name: "app",
@@ -74,15 +79,28 @@ export default {
   created() {
     // LDI
     this.cpu.iMemory.writeInt(0, 0xe28c);
-    this.cpu.iMemory.writeInt(4, 0xe390);
+    this.cpu.iMemory.writeInt(4, 0xe294);
     this.cpu.iMemory.writeInt(8, 0x2c38);
-    this.cpu.iMemory.writeInt(12, 0x0c09);
+    this.cpu.iMemory.writeInt(12, 0x0c89);
     this.cpu.iMemory.writeInt(16, 0x0818);
     this.cpu.iMemory.writeInt(20, 0x9c38);
   },
   methods: {
     step() {
       this.cpu.step();
+    },
+
+    formatNum(num, bit = 10, length = 0) {
+      if (typeof num === "undefined") {
+        console.warn(`格式化失败：${num}`);
+        return 0;
+      }
+
+      let result = num.toString(bit);
+      while (result.length < length) {
+        result = "0" + result;
+      }
+      return result;
     }
   }
 };

@@ -14,13 +14,14 @@ export default class Alu {
    */
   add() {
     this.lt = this.la + this.lb;
-    this.sr =
+    this.sr &= 0xc0;
+    this.sr |=
       this.zFlag() |
       this.nFlag() |
       this.cFlag() |
       this.vFlag() |
-      this.sFlag() |
-      this.hFlag();
+      this.sFlag(this.nFlag(), this.vFlag()) |
+      this.hFlag(this.la, this.lb);
     this.lt &= 0xffff;
   }
 
@@ -31,13 +32,14 @@ export default class Alu {
     // 先求-lb，然后按照加法计算
     this.temp = ((this.lb ^ 0xff) + 1) & 0xff;
     this.lt = this.la + this.temp;
-    this.sr =
+    this.sr &= 0xc0;
+    this.sr |=
       this.zFlag() |
       this.nFlag() |
       this.cFlag() |
       this.vFlag() |
-      this.sFlag() |
-      this.hFlag();
+      this.sFlag(this.nFlag(), this.vFlag()) |
+      this.hFlag(this.la, this.temp);
     this.lt &= 0xffff;
   }
 
@@ -46,7 +48,8 @@ export default class Alu {
    */
   mul() {
     this.lt = this.la + this.lb;
-    this.sr = this.zFlag() | this.cFlag();
+    this.sr &= 0xfc;
+    this.sr |= this.zFlag() | this.cFlag();
     this.lt &= 0xffff;
   }
 
@@ -90,8 +93,11 @@ export default class Alu {
     return (n > 0 && v > 0) || (n === 0 && v === 0) ? 0 : Constant.F_SF;
   }
 
-  hFlag() {
+  hFlag(a, b) {
     // TODO: 编写逻辑
+    if ((a & 0xf) + (b & 0xf) > 15) {
+      return Constant.F_HF;
+    }
     return 0;
   }
 }
