@@ -2,7 +2,7 @@
 import Memory from "./memory";
 import Register from "./register";
 import Alu from "./alu";
-import constant from "./constant";
+import Constant from "./constant";
 
 export default class Cpu {
   constructor() {
@@ -18,8 +18,8 @@ export default class Cpu {
     this.alu = new Alu();
 
     // 源操作数、目的操作数、临时寄存器
-    this.sr = 0;
-    this.dr = 0;
+    this.rr = 0;
+    this.rd = 0;
     this.temp = 0;
 
     // 指令存储器和数据存储器
@@ -41,71 +41,89 @@ export default class Cpu {
     this.ir = this.iMemory.readInt(this.pc);
     this.pc += 4;
 
-    // 译码
-    // 获取高8位和高4位
-    const h8 = this.ir >> 8;
-    const h4 = this.ir >> 12;
+    /**
+     * 检查当前指令
+     * @param {*} op 指令
+     */
+    const check = op => {
+      let i = this.ir;
+      let o = op;
+      // 分四组判定，每组判定四位
+      for (let index = 0; index < 4; index++) {
+        // 如果op最后四位不为0
+        // 为0意味着这四位不是op位，跳过
+        if ((o & 0xf) > 0) {
+          // 如果ir和op最后四位不相等，则返回失败
+          if ((i & 0xf) !== (o & 0xf)) return false;
+        }
+        // 全部右移
+        i >>= 4;
+        o >>= 4;
+      }
+      return true;
+    };
 
-    if (h8 === 0x0c) {
+    // 译码
+    if (check(Constant.OP.ADD)) {
       // ADD指令
       const rd = (this.ir >> 4) & 0xf;
       const rr = this.ir & 0xf;
 
-      this.sr = this.register.get(rd);
-      this.dr = this.register.get(rr);
+      this.rr = this.register.get(rr);
+      this.rd = this.register.get(rd);
 
-      this.alu.la = this.sr;
-      this.alu.lb = this.dr;
+      this.alu.la = this.rd;
+      this.alu.lb = this.rr;
 
       this.alu.add();
 
       this.register.set(rd, this.alu.lt & 0xff);
-    } else if (h8 === 0x08) {
+    } else if (check(Constant.OP.SUB)) {
       // SUB指令
       const rd = (this.ir >> 4) & 0xf;
       const rr = this.ir & 0xf;
 
-      this.sr = this.register.get(rd);
-      this.dr = this.register.get(rr);
+      this.rr = this.register.get(rr);
+      this.rd = this.register.get(rd);
 
-      this.alu.la = this.sr;
-      this.alu.lb = this.dr;
+      this.alu.la = this.rd;
+      this.alu.lb = this.rr;
 
       this.alu.sub();
 
       this.register.set(rd, this.alu.lt & 0xff);
-    } else if (h8 === 0x9c) {
+    } else if (check(Constant.OP.MUL)) {
       // MUL指令
       const rd = (this.ir >> 4) & 0xf;
       const rr = this.ir & 0xf;
 
-      this.sr = this.register.get(rd);
-      this.dr = this.register.get(rr);
+      this.rr = this.register.get(rr);
+      this.rd = this.register.get(rd);
 
-      this.alu.la = this.sr;
-      this.alu.lb = this.dr;
+      this.alu.la = this.rd;
+      this.alu.lb = this.rr;
 
       this.alu.mul();
 
       this.register.set(0, this.alu.lt & 0xff);
       this.register.set(1, (this.alu.lt >> 4) & 0xff);
-    } else if (h4 === 0xc) {
+    } else if (check(Constant.OP.RJUMP)) {
       // RJUMP
       const k = this.ir & 0xfff;
       this.pc += k + 1;
-    } else if (h8 === 0xf1) {
+    } else if (check(Constant.OP.BRMI)) {
       // BRMI
       const k = this.ir & 0xff;
-      if (this.alu.sr & constant.F_NF) {
+      if (this.alu.sr & Constant.F_NF) {
         this.pc += k + 1;
       }
-    } else if (h8 === 0x2c) {
+    } else if (check(Constant.OP.MOV)) {
       // MOV
       const rd = (this.ir >> 4) & 0xf;
       const rr = this.ir & 0xf;
 
       this.register.set(rd, this.register.get(rr));
-    } else if (h4 === 0xe) {
+    } else if (check(Constant.OP.LDI)) {
       // LDI
       const k = ((this.ir & 0xf00) >> 4) + (this.ir & 0xf);
       const rd = (this.ir >> 4) & 0xf;
@@ -114,15 +132,15 @@ export default class Cpu {
       if (rd > 7 && rd < 16) {
         this.register.set(rd, k);
       }
-    } else if (h8 === 0x90) {
+    } else if (check(Constant.OP.LD)) {
       // LD
       const rd = (this.ir >> 4) & 0xf;
       this.register.set(rd, this.register.get(14));
-    } else if (h8 === 0x92) {
+    } else if (check(Constant.OP.ST)) {
       // ST
       const rr = (this.ir >> 4) & 0xf;
       this.register.set(14, this.register.get(rr));
-    } else if (h8 === 0x00) {
+    } else if (check(Constant.OP.NOP)) {
       // NOP
     }
   }

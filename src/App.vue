@@ -32,9 +32,7 @@
         class="register-lable"
       >
         0x{{ formatNum(index * 4, 16, 4) }}:
-        <label v-for="(byte, index) in data" :key="index">
-          {{ formatNum(byte, 2, 4) }}
-        </label>
+        {{ formatNum(cpu.iMemory.readInt(index * 4), 16, 4) }}
         {{ instruction[index] }}
       </p>
     </label>
@@ -42,7 +40,7 @@
 </template>
 
 <script>
-import { Cpu, Constant } from "./cpu";
+import { Cpu, Constant, parser } from "./cpu";
 
 export default {
   name: "app",
@@ -78,12 +76,17 @@ export default {
   },
   created() {
     // LDI
-    this.cpu.iMemory.writeInt(0, 0xe28c);
-    this.cpu.iMemory.writeInt(4, 0xe294);
-    this.cpu.iMemory.writeInt(8, 0x2c38);
-    this.cpu.iMemory.writeInt(12, 0x0c89);
-    this.cpu.iMemory.writeInt(16, 0x0818);
-    this.cpu.iMemory.writeInt(20, 0x9c38);
+    // this.cpu.iMemory.writeInt(0, 0xe28c);
+    // this.cpu.iMemory.writeInt(4, 0xe294);
+    // this.cpu.iMemory.writeInt(8, 0x2c38);
+    // this.cpu.iMemory.writeInt(12, 0x0c89);
+    // this.cpu.iMemory.writeInt(16, 0x0818);
+    // this.cpu.iMemory.writeInt(20, 0x9c38);
+    for (let index = 0; index < this.instruction.length; index++) {
+      const item = this.instruction[index];
+      // console.log(this.formatNum(parser(item), 16, 4));
+      this.cpu.iMemory.writeInt(index * 4, parser(item));
+    }
   },
   methods: {
     step() {
@@ -91,12 +94,15 @@ export default {
     },
 
     formatNum(num, bit = 10, length = 0) {
+      let result;
+
       if (typeof num === "undefined") {
         console.warn(`格式化失败：${num}`);
-        return 0;
+        result = "0";
+      } else {
+        result = num.toString(bit);
       }
 
-      let result = num.toString(bit);
       while (result.length < length) {
         result = "0" + result;
       }

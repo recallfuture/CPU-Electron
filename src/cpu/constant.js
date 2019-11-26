@@ -2,6 +2,19 @@
  * 常量表
  */
 export default {
+  OP: {
+    ADD: 0x0c00,
+    SUB: 0x0800,
+    MUL: 0x9c00,
+    RJUMP: 0xc000,
+    BRMI: 0xf100,
+    MOV: 0x2c00,
+    LDI: 0xe000,
+    LD: 0x900c,
+    ST: 0x920c,
+    NOP: 0
+  },
+
   REGISTERS: [
     "R0",
     "R1",
