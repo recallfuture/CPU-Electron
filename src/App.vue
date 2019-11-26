@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <button @click="step">step</button>
+    <input type="file" name="file" id="file" @change="readFile" />
+    <br />
+    <button @click="step">单步执行</button>
 
     <p>pc: 0x{{ formatNum(cpu.pc, 16, 4) }}</p>
     <p>bus: 0x{{ formatNum(cpu.bus, 16, 4) }}</p>
@@ -47,14 +49,7 @@ export default {
   data() {
     return {
       cpu: new Cpu(),
-      instruction: [
-        "LDI R8, 2C",
-        "LDI R9, 30",
-        "MOV R3, R8",
-        "ADD R0, R9",
-        "SUB R1, R8",
-        "MUL R3, R8"
-      ]
+      instruction: []
     };
   },
   computed: {
@@ -82,15 +77,46 @@ export default {
     // this.cpu.iMemory.writeInt(12, 0x0c89);
     // this.cpu.iMemory.writeInt(16, 0x0818);
     // this.cpu.iMemory.writeInt(20, 0x9c38);
-    for (let index = 0; index < this.instruction.length; index++) {
-      const item = this.instruction[index];
-      // console.log(this.formatNum(parser(item), 16, 4));
-      this.cpu.iMemory.writeInt(index * 4, parser(item));
-    }
   },
   methods: {
     step() {
       this.cpu.step();
+    },
+
+    readFile(event) {
+      const callback = this.parse;
+      //获取读取我文件的File对象
+      const selectedFile = event.target.files[0];
+      //这是核心,读取操作就是由它完成.
+      const reader = new FileReader();
+
+      //读取文件的内容,也可以读取文件的URL
+      reader.readAsText(selectedFile);
+      reader.onload = function() {
+        //当读取完成后回调这个函数,然后此时文件的内容存储到了result中,直接操作即可
+        callback(this.result);
+      };
+    },
+
+    parse(text) {
+      this.instruction = text.split("\n");
+
+      let index;
+      try {
+        for (index = 0; index < this.instruction.length; index++) {
+          const item = this.instruction[index];
+          if (!item) continue;
+
+          // console.log(this.formatNum(parser(item), 16, 4));
+          this.cpu.iMemory.writeInt(index * 4, parser(item));
+        }
+      } catch (e) {
+        alert(
+          `读取失败\n` +
+            `${index + 1}:${this.instruction[index]}\n` +
+            `原因是：${e.message}`
+        );
+      }
     },
 
     formatNum(num, bit = 10, length = 0) {

@@ -16,7 +16,7 @@ export default class Memory {
    */
   fillTo(address) {
     for (let i = this.data.length; i <= address; ++i) {
-      this.data[i] = [0, 0, 0, 0];
+      this.data.push([0, 0, 0, 0]);
     }
   }
 
