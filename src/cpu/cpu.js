@@ -52,7 +52,7 @@ export default class Cpu {
       for (let index = 0; index < 4; index++) {
         // 如果op最后四位不为0
         // 为0意味着这四位不是op位，跳过
-        if ((o & 0xf) > 0) {
+        if ((o & 0xf) > 0 || index === 3) {
           // 如果ir和op最后四位不相等，则返回失败
           if ((i & 0xf) !== (o & 0xf)) return false;
         }
