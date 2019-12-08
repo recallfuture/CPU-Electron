@@ -1,0 +1,44 @@
+/**
+* Created by shuding on 6/10/15.
+* <ds303077135@gmail.com>
+*/
+fetch, decode, execute, memory, write-back {
+  display: flex;
+  display: -webkit-flex;
+  width: 100%;
+}
+
+fetch > h3, decode > h3, execute > h3, memory > h3, write-back > h3 {
+  width: 120px;
+  flex: 0 0 120px;
+  text-align: center;
+  border: none;
+}
+
+fetch > div, decode > div, execute > div, memory > div, write-back > div {
+  display: flex;
+  display: -webkit-flex;
+  flex: 1;
+  -webkit-flex: 1;
+  align-items: center;
+  -webkit-align-items: center;
+}
+
+pipe-attr {
+  display: block;
+  width: 10%;
+  max-width: 150px;
+  padding: 2px 5px;
+}
+
+pipe-attr h6, pipe-attr p {
+  margin: 0;
+}
+
+pipe-attr h6 {
+  color: #00b6c1;
+}
+
+pipe-attr:hover {
+  box-shadow: 0 0 0 1px rgb(54, 243, 255) inset;
+}

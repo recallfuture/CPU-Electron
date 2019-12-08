@@ -1,0 +1,22 @@
+.register-container {
+  padding: 10px;
+}
+
+.register-container > div {
+  max-height: calc(100% - 40px);
+  overflow: scroll;
+}
+
+.register {
+  display: block;
+}
+
+.register-name {
+  color: #188188;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.register-data {
+  font-family: "Jura", "Courier New", monospace;
+}

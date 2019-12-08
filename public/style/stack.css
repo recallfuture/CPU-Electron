@@ -1,0 +1,13 @@
+.stack-container > div {
+  max-height: calc(100% - 40px);
+  font-family: "Jura", "Courier New", monospace;
+  overflow: scroll;
+}
+
+stack > div > span:last-of-type {
+  font-weight: 900;
+  color: #0adce6;
+  border-left: 1px solid;
+  padding-left: 3px;
+  margin-left: 3px;
+}

@@ -1,60 +1,92 @@
 <template>
-  <div id="app">
-    <input type="file" name="file" id="file" @change="readFile" />
-    <br />
-    <button @click="step">单步执行</button>
+  <div id="app" class="board top-line">
+    <div>
+      <!-- 控制面板 -->
+      <control-container
+        @run="run"
+        @step="step"
+        @reset="reset"
+      ></control-container>
 
-    <p>pc: 0x{{ formatNum(cpu.pc, 16, 4) }}</p>
-    <p>bus: 0x{{ formatNum(cpu.bus, 16, 4) }}</p>
-    <p>ir: 0x{{ formatNum(cpu.ir, 16, 4) }}</p>
+      <!-- 主区域-->
+      <div class="flex-container justify-center top-line flex-grow">
+        <!-- 状态寄存器 -->
+        <register-container
+          left
+          :title="'状态位'"
+          :list="sr"
+        ></register-container>
 
-    <p>
-      状态位:
-      <label v-for="(f, index) in sr" :key="index" class="register-lable">
-        {{ f.name }}: {{ f.value }}
-      </label>
-    </p>
+        <!-- 普通寄存器 -->
+        <register-container
+          left
+          :title="'寄存器'"
+          :list="registerLeft"
+        ></register-container>
 
-    <p>
-      寄存器:
-      <label
-        v-for="(r, index) in constant.REGISTERS"
-        :key="index"
-        class="register-lable"
-      >
-        {{ r }}: {{ formatNum(cpu.register.get(r), 16, 2) }}
-      </label>
-    </p>
+        <!-- 汇编代码 -->
+        <code-container
+          @change="changeFile"
+          :pc="cpu.pc / 4"
+          :data="lines"
+        ></code-container>
 
-    <label>
-      指令存储器:
-      <p
-        v-for="(data, index) in cpu.iMemory.data"
-        :key="index"
-        class="register-lable"
-      >
-        0x{{ formatNum(index * 4, 16, 4) }}:
-        {{ formatNum(cpu.iMemory.readInt(index * 4), 16, 4) }}
-        {{ instruction[index] }}
-      </p>
-    </label>
+        <!-- 通用寄存器 -->
+        <register-container
+          right
+          :title="'通用寄存器'"
+          :list="registerRight"
+        ></register-container>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import { formatNum } from "./utils";
 import { Cpu, Constant, parser } from "./cpu";
+import ControlContainer from "./components/ControlContainer";
+import RegisterContainer from "./components/RegisterContainer";
+import CodeContainer from "./components/CodeContainer";
 
 export default {
   name: "app",
   data() {
     return {
+      halt: true,
       cpu: new Cpu(),
-      instruction: []
+
+      file: undefined,
+      code: []
     };
+  },
+  components: {
+    ControlContainer,
+    RegisterContainer,
+    CodeContainer
   },
   computed: {
     constant() {
       return Constant;
+    },
+    registerLeft() {
+      return [
+        { name: "PC", value: formatNum(this.cpu.pc, 16, 2) },
+        { name: "BUS", value: formatNum(this.cpu.bus, 16, 2) },
+        { name: "IR", value: formatNum(this.cpu.ir, 16, 2) },
+        { name: "RR", value: formatNum(this.cpu.rr, 16, 2) },
+        { name: "RD", value: formatNum(this.cpu.rd, 16, 2) },
+        { name: "TEMP", value: formatNum(this.cpu.temp, 16, 2) },
+        { name: "LA", value: formatNum(this.cpu.la, 16, 2) },
+        { name: "LB", value: formatNum(this.cpu.lb, 16, 2) },
+        { name: "LT", value: formatNum(this.cpu.lt, 16, 4) }
+      ];
+    },
+    registerRight() {
+      return Constant.REGISTERS.map(item => ({
+        name: item,
+        value: formatNum(this.cpu.register.get(item), 16, 2)
+      }));
     },
     sr() {
       return [
@@ -67,91 +99,74 @@ export default {
         { name: "TF", value: this.cpu.alu.sr & Constant.F_TF ? 1 : 0 },
         { name: "IF", value: this.cpu.alu.sr & Constant.F_IF ? 1 : 0 }
       ];
+    },
+
+    lines() {
+      return this.code.map((c, index) => ({
+        addr: formatNum(index * 4, 16, 2),
+        code: c,
+        instruction: formatNum(this.cpu.iMemory.readInt(index * 4), 16, 4)
+      }));
     }
   },
-  created() {
-    // LDI
-    // this.cpu.iMemory.writeInt(0, 0xe28c);
-    // this.cpu.iMemory.writeInt(4, 0xe294);
-    // this.cpu.iMemory.writeInt(8, 0x2c38);
-    // this.cpu.iMemory.writeInt(12, 0x0c89);
-    // this.cpu.iMemory.writeInt(16, 0x0818);
-    // this.cpu.iMemory.writeInt(20, 0x9c38);
-  },
   methods: {
+    run() {},
+
     step() {
+      if (this.halt) {
+        return;
+      }
       this.cpu.step();
     },
 
-    readFile(event) {
-      const callback = this.parse;
+    reset() {
+      this.cpu = new Cpu();
+      this.parse();
+    },
+
+    changeFile(event) {
       //获取读取我文件的File对象
       const selectedFile = event.target.files[0];
+      this.file = selectedFile;
+      this.readFile(selectedFile);
+    },
+
+    readFile(file) {
       //这是核心,读取操作就是由它完成.
       const reader = new FileReader();
 
       //读取文件的内容,也可以读取文件的URL
-      reader.readAsText(selectedFile);
-      reader.onload = function() {
+      reader.readAsText(file);
+      reader.onload = () => {
         //当读取完成后回调这个函数,然后此时文件的内容存储到了result中,直接操作即可
-        callback(this.result);
+        this.code = reader.result.split("\n");
+        this.code.pop();
+        this.parse();
+        this.halt = false;
       };
     },
 
-    parse(text) {
-      this.instruction = text.split("\n");
-
+    parse() {
       let index;
       try {
-        for (index = 0; index < this.instruction.length; index++) {
-          const item = this.instruction[index];
+        for (index = 0; index < this.code.length; index++) {
+          const item = this.code[index];
           if (!item) continue;
 
           // console.log(this.formatNum(parser(item), 16, 4));
-          this.cpu.iMemory.writeInt(index * 4, parser(item));
+          const instruction = parser(item);
+          this.cpu.iMemory.writeInt(index * 4, instruction);
         }
       } catch (e) {
         alert(
           `读取失败\n` +
-            `${index + 1}:${this.instruction[index]}\n` +
+            `${index + 1}:${this.code[index]}\n` +
             `原因是：${e.message}`
         );
       }
-    },
-
-    formatNum(num, bit = 10, length = 0) {
-      let result;
-
-      if (typeof num === "undefined") {
-        console.warn(`格式化失败：${num}`);
-        result = "0";
-      } else {
-        result = num.toString(bit);
-      }
-
-      while (result.length < length) {
-        result = "0" + result;
-      }
-      return result;
     }
   }
 };
 </script>
 
-<style lang="stylus">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-
-.register-lable {
-  background-color: #999;
-  margin-right: 5px;
-  padding: 5px;
-  border-radius: 5px;
-}
-</style>
+<style lang="stylus"></style>

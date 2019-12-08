@@ -1246,6 +1246,14 @@ address@^1.1.2:
   resolved "https://registry.npm.taobao.org/address/download/address-1.1.2.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Faddress%2Fdownload%2Faddress-1.1.2.tgz#bf1116c9c758c51b7a933d296b72c221ed9428b6"
   integrity sha1-vxEWycdYxRt6kz0pa3LCIe2UKLY=
 
+after-transition@0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/after-transition/-/after-transition-0.0.4.tgz#1653560507893d820e50323ddbbaaefd2ae17555"
+  integrity sha1-FlNWBQeJPYIOUDI927qu/SrhdVU=
+  dependencies:
+    css-emitter-component "~0.1.1"
+    has-transitions "~0.3.0"
+
 aggregate-error@^3.0.0:
   version "3.0.1"
   resolved "https://registry.npm.taobao.org/aggregate-error/download/aggregate-error-3.0.1.tgz#db2fe7246e536f40d9b5442a39e117d7dd6a24e0"
@@ -2188,10 +2196,15 @@ commondir@^1.0.1:
   resolved "https://registry.npm.taobao.org/commondir/download/commondir-1.0.1.tgz#ddd800da0c66127393cca5950ea968a3aaf1253b"
   integrity sha1-3dgA2gxmEnOTzKWVDqloo6rxJTs=
 
-component-emitter@^1.2.1:
+component-emitter@^1.2.0, component-emitter@^1.2.1:
   version "1.3.0"
   resolved "https://registry.npm.taobao.org/component-emitter/download/component-emitter-1.3.0.tgz#16e4070fba8ae29b679f2215853ee181ab2eabc0"
   integrity sha1-FuQHD7qK4ptnnyIVhT7hgasuq8A=
+
+component-query@0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/component-query/-/component-query-0.0.3.tgz#07f49dab7071fa9606725df53e607f468acdaacf"
+  integrity sha1-B/Sdq3Bx+pYGcl31PmB/RorNqs8=
 
 compressible@~2.0.16:
   version "2.0.17"
@@ -2441,6 +2454,18 @@ css-declaration-sorter@^4.0.1:
   dependencies:
     postcss "^7.0.1"
     timsort "^0.3.0"
+
+css-ease@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/css-ease/-/css-ease-0.0.1.tgz#537679b67c9fc7c52968825b6fdd21f7492ca86c"
+  integrity sha1-U3Z5tnyfx8UpaIJbb90h90ksqGw=
+
+css-emitter-component@~0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/css-emitter-component/-/css-emitter-component-0.1.1.tgz#fb5e4c4dab3cd62c930acac837b6e34d87ab2a8e"
+  integrity sha1-+15MTas81iyTCsrIN7bjTYerKo4=
+  dependencies:
+    event-component "~0.1.0"
 
 css-loader@^3.1.0:
   version "3.2.0"
@@ -3216,6 +3241,11 @@ etag@~1.8.1:
   resolved "https://registry.npm.taobao.org/etag/download/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
   integrity sha1-Qa4u62XvpiJorr/qg6x9eSmbCIc=
 
+event-component@~0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/event-component/-/event-component-0.1.0.tgz#80455579d134ab27e3bb80bb2869bf96a76e9e68"
+  integrity sha1-gEVVedE0qyfju4C7KGm/lqdunmg=
+
 event-pubsub@4.3.0:
   version "4.3.0"
   resolved "https://registry.npm.taobao.org/event-pubsub/download/event-pubsub-4.3.0.tgz#f68d816bc29f1ec02c539dc58c8dd40ce72cb36e"
@@ -3864,6 +3894,18 @@ has-symbols@^1.0.0, has-symbols@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npm.taobao.org/has-symbols/download/has-symbols-1.0.1.tgz?cache=0&sync_timestamp=1573950770764&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fhas-symbols%2Fdownload%2Fhas-symbols-1.0.1.tgz#9f5214758a44196c406d9bd76cebf81ec2dd31e8"
   integrity sha1-n1IUdYpEGWxAbZvXbOv4HsLdMeg=
+
+has-transitions@~0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/has-transitions/-/has-transitions-0.3.0.tgz#066437c589613a8d7ba0aaa3cbd408eccb408f10"
+  integrity sha1-BmQ3xYlhOo17oKqjy9QI7MtAjxA=
+
+has-translate3d@0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/has-translate3d/-/has-translate3d-0.0.3.tgz#ee0157ad5b4ca8a1a33514a9e7ef45415a132103"
+  integrity sha1-7gFXrVtMqKGjNRSp5+9FQVoTIQM=
+  dependencies:
+    transform-property "0.0.1"
 
 has-unicode@^2.0.0:
   version "2.0.1"
@@ -5206,6 +5248,17 @@ move-concurrently@^1.0.1:
     mkdirp "^0.5.1"
     rimraf "^2.5.4"
     run-queue "^1.0.3"
+
+move-js@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/move-js/-/move-js-0.5.0.tgz#19f42dee61fe6ae9252436c27796c122614c3d2c"
+  integrity sha1-GfQt7mH+auklJDbCd5bBImFMPSw=
+  dependencies:
+    after-transition "0.0.4"
+    component-emitter "^1.2.0"
+    component-query "0.0.3"
+    css-ease "0.0.1"
+    has-translate3d "0.0.3"
 
 ms@2.0.0:
   version "2.0.0"
@@ -7738,6 +7791,11 @@ tough-cookie@~2.4.3:
   dependencies:
     psl "^1.1.24"
     punycode "^1.4.1"
+
+transform-property@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/transform-property/-/transform-property-0.0.1.tgz#4863662f9d5e5bb8f0c00648eff08beb14fd65f2"
+  integrity sha1-SGNmL51eW7jwwAZI7/CL6xT9ZfI=
 
 tryer@^1.0.1:
   version "1.0.1"
