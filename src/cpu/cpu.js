@@ -12,33 +12,26 @@ export default class Cpu {
     this.bus = 0;
     // 指令寄存器
     this.ir = 0;
-    // 通用寄存器
-    this.register = new Register();
-    // 计算模块
-    this.alu = new Alu();
-
     // 源操作数、目的操作数、临时寄存器
     this.rr = 0;
     this.rd = 0;
     this.temp = 0;
 
-    // 指令存储器和数据存储器
+    // 通用寄存器
+    this.register = new Register();
+    // 计算模块
+    this.alu = new Alu();
+    // 指令存储器
     this.iMemory = new Memory();
-    this.memory = new Memory();
-
     // 指令存储器的地址寄存器和数据寄存器
     this.imar = 0;
     this.imdr = 0;
-
-    // 数据存储器的地址寄存器和数据寄存器
-    this.mar = 0;
-    this.mdr = 0;
   }
 
   step() {
     // FT
     // pc->bus, bus->imar, read, imdr->bus, bus->ir, pc+1->pc
-    this.ir = this.iMemory.readInt(this.pc);
+    this.ir = this.iMemory.readShort(this.pc);
     this.pc += 4;
 
     /**
