@@ -1,5 +1,6 @@
 // import Constant from "./constant";
 import Memory from "./memory";
+import mMemory from "./mMemory";
 import Register from "./register";
 import Alu from "./alu";
 import Constant from "./constant";
@@ -21,11 +22,16 @@ export default class Cpu {
     this.register = new Register();
     // 计算模块
     this.alu = new Alu();
-    // 指令存储器
+    // 指令存储器和微指令存储器
     this.iMemory = new Memory();
     // 指令存储器的地址寄存器和数据寄存器
     this.imar = 0;
     this.imdr = 0;
+
+    // 微指令计数器
+    this.mPc = 0;
+    // 微指令存储器
+    this.mMemory = mMemory;
   }
 
   step() {

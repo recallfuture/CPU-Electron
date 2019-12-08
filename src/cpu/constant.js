@@ -66,5 +66,65 @@ export default {
   FT: 0,
   ST: 1,
   DT: 2,
-  ET: 3
+  ET: 3,
+
+  // 微指令
+  M_INSTRUCTION: toEnum({
+    // F1
+    "PC->BUS": 0x1 << 14,
+    "IMDR->BUS": 0x2 << 14,
+    "LT->BUS": 0x3 << 14,
+    "Rr->BUS": 0x4 << 14,
+    "Rd->BUS": 0x5 << 14,
+    "RR->BUS": 0x6 << 14,
+    "RD->BUS": 0x7 << 14,
+    "TEMP->BUS": 0x8 << 14,
+
+    // F2
+    "BUS->PC": 0x1 << 11,
+    "BUS->IR": 0x2 << 11,
+    "ALU->LT": 0x3 << 11,
+    "BUS->Rr": 0x4 << 11,
+    "BUS->Rd": 0x5 << 11,
+    "BUS->Ra": 0x6 << 11,
+
+    // F3
+    "BUS->IMAR": 0x1 << 10,
+
+    // F4
+    "BUS->LA": 0x1 << 7,
+    "BUS->RR": 0x2 << 7,
+    "BUS->RD": 0x3 << 7,
+    "BUS->TEMP": 0x4 << 7,
+
+    // F5
+    ADD: 0x1 << 5,
+    SUB: 0x2 << 5,
+    MUL: 0x3 << 5,
+
+    // F6
+    READ: 0x1 << 3,
+    WRITE: 0x2 << 3,
+
+    // F7
+    "CLEAR LA": 0x1 << 2,
+
+    // F8
+    WAIT: 0x1 << 1,
+
+    // f9
+    "1->C0": 0x1
+  })
 };
+
+/**
+ * 将对象转化为枚举，即可以用key找到value，也可以用value找到key
+ * @param {Object} object 要转化的对象
+ */
+function toEnum(object) {
+  for (const key in object) {
+    const element = object[key];
+    object[element] = key;
+  }
+  return object;
+}
