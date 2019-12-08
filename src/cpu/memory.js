@@ -36,7 +36,7 @@ export default class Memory {
   /**
    * 修改某地址上的数据
    * @param {number} address 地址
-   * @param {number} byte 数据（0-255）
+   * @param {number} byte 数据（0-0xff）
    */
   set(address, byte) {
     const index = Math.floor(address / 4);
@@ -50,7 +50,7 @@ export default class Memory {
   /**
    * 写入字节
    * @param {number} address 地址
-   * @param {number} byte 数据（0-255）
+   * @param {number} byte 数据（0-0xff）
    */
   writeByte(address, byte) {
     if (!Utils.checkByte(byte)) {
@@ -72,13 +72,13 @@ export default class Memory {
    * @param {number} address 地址
    * @param {number} 16位的整型数据
    */
-  writeInt(address, int) {
+  writeShort(address, int) {
     if (!Utils.checkNumber(int)) {
       throw new Error("写入失败");
     }
-    for (var i = 0; i < 4; ++i) {
-      this.set(address + i, int & 0xf);
-      int >>= 4;
+    for (var i = 0; i < 2; ++i) {
+      this.set(address * 2 + i, int & 0xff);
+      int >>= 8;
     }
   }
 
@@ -86,12 +86,35 @@ export default class Memory {
    * 读取16位整型数据
    * @param {number} address 地址
    */
+  readShort(address) {
+    return this.get(address * 2 + 0) + (this.get(address * 2 + 1) << 8);
+  }
+
+  /**
+   * 写入32位整型数据
+   * @param {number} address 地址
+   * @param {number} 32位的整型数据
+   */
+  writeInt(address, int) {
+    if (!Utils.checkNumber(int)) {
+      throw new Error("写入失败");
+    }
+    for (var i = 0; i < 4; ++i) {
+      this.set(address * 4 + i, int & 0xff);
+      int >>= 8;
+    }
+  }
+
+  /**
+   * 读取32位整型数据
+   * @param {number} address 地址
+   */
   readInt(address) {
     return (
-      this.get(address + 0) +
-      this.get(address + 1) * 0x10 +
-      this.get(address + 2) * 0x100 +
-      this.get(address + 3) * 0x1000
+      this.get(address * 4 + 0) +
+      (this.get(address * 4 + 1) << 8) +
+      (this.get(address * 4 + 2) << 16) +
+      (this.get(address * 4 + 3) << 24)
     );
   }
 }
