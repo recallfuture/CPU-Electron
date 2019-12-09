@@ -1,9 +1,9 @@
 // import Constant from "./constant";
 import Memory from "./memory";
-import mMemory from "./mMemory";
 import Register from "./register";
 import Alu from "./alu";
 import Constant from "./constant";
+import runner from "./runner";
 
 export default class Cpu {
   constructor() {
@@ -18,129 +18,152 @@ export default class Cpu {
     this.rd = 0;
     this.temp = 0;
 
+    // 状态寄存器
+    this.sr = 0;
+
     // 通用寄存器
     this.register = new Register();
     // 计算模块
-    this.alu = new Alu();
+    this.alu = new Alu(this);
     // 指令存储器和微指令存储器
     this.iMemory = new Memory();
     // 指令存储器的地址寄存器和数据寄存器
     this.imar = 0;
     this.imdr = 0;
 
-    // 微指令计数器
-    this.mPc = 0;
-    // 微指令存储器
-    this.mMemory = mMemory;
+    // 源寄存器号和目的寄存器号
+    this.Rr = 0;
+    this.Rd = 0;
+
+    // 当前执行的指令
+    this.currentInstruction = "NOP";
+    this.currentInstructionIndex = 0;
+
+    // 指令周期
+    this.cycle = ["FT", "ST", "DT", "ET"];
+    this.currentCycleIndex = 0;
+    // 当前指令周期的微指令索引
+    this.currentMInstructionIndex = 0;
   }
 
-  step() {
-    // FT
-    // pc->bus, bus->imar, read, imdr->bus, bus->ir, pc+1->pc
-    this.ir = this.iMemory.readShort(this.pc);
-    this.pc += 4;
-
-    /**
-     * 检查当前指令
-     * @param {*} op 指令
-     */
-    const check = op => {
-      let i = this.ir;
-      let o = op;
-      // 分四组判定，每组判定四位
-      for (let index = 0; index < 4; index++) {
-        // 如果op最后四位不为0
-        // 为0意味着这四位不是op位，跳过
-        if ((o & 0xf) > 0 || index === 3) {
-          // 如果ir和op最后四位不相等，则返回失败
-          if ((i & 0xf) !== (o & 0xf)) return false;
-        }
-        // 全部右移
-        i >>= 4;
-        o >>= 4;
+  /**
+   * 检查当前指令
+   * @param {*} op 指令的二进制码
+   */
+  check(op) {
+    let i = this.ir;
+    let o = op;
+    // 分四组判定，每组判定四位
+    for (let index = 4; index > 0; index--) {
+      // 如果op最后一组不为0
+      // 处于第一组时必须判定
+      if ((o & 0xf) > 0 || index === 1) {
+        // 如果ir和op最后四位不相等，则返回失败
+        if ((i & 0xf) !== (o & 0xf)) return false;
       }
-      return true;
-    };
-
-    // 译码
-    if (check(Constant.OP.ADD)) {
-      // ADD指令
-      const rd = (this.ir >> 4) & 0xf;
-      const rr = this.ir & 0xf;
-
-      this.rr = this.register.get(rr);
-      this.rd = this.register.get(rd);
-
-      this.alu.la = this.rd;
-      this.alu.lb = this.rr;
-
-      this.alu.add();
-
-      this.register.set(rd, this.alu.lt & 0xff);
-    } else if (check(Constant.OP.SUB)) {
-      // SUB指令
-      const rd = (this.ir >> 4) & 0xf;
-      const rr = this.ir & 0xf;
-
-      this.rr = this.register.get(rr);
-      this.rd = this.register.get(rd);
-
-      this.alu.la = this.rd;
-      this.alu.lb = this.rr;
-
-      this.alu.sub();
-
-      this.register.set(rd, this.alu.lt & 0xff);
-    } else if (check(Constant.OP.MUL)) {
-      // MUL指令
-      const rd = (this.ir >> 4) & 0xf;
-      const rr = this.ir & 0xf;
-
-      this.rr = this.register.get(rr);
-      this.rd = this.register.get(rd);
-
-      this.alu.la = this.rd;
-      this.alu.lb = this.rr;
-
-      this.alu.mul();
-
-      this.register.set(0, this.alu.lt & 0xff);
-      this.register.set(1, (this.alu.lt >> 4) & 0xff);
-    } else if (check(Constant.OP.RJUMP)) {
-      // RJUMP
-      const k = this.ir & 0xfff;
-      this.pc += k + 1;
-    } else if (check(Constant.OP.BRMI)) {
-      // BRMI
-      const k = this.ir & 0xff;
-      if (this.alu.sr & Constant.F_NF) {
-        this.pc += k + 1;
-      }
-    } else if (check(Constant.OP.MOV)) {
-      // MOV
-      const rd = (this.ir >> 4) & 0xf;
-      const rr = this.ir & 0xf;
-
-      this.register.set(rd, this.register.get(rr));
-    } else if (check(Constant.OP.LDI)) {
-      // LDI
-      const k = ((this.ir & 0xf00) >> 4) + (this.ir & 0xf);
-      const rd = (this.ir >> 4) & 0xf;
-
-      // rd只能是8-15
-      if (rd > 7 && rd < 16) {
-        this.register.set(rd, k);
-      }
-    } else if (check(Constant.OP.LD)) {
-      // LD
-      const rd = (this.ir >> 4) & 0xf;
-      this.register.set(rd, this.register.get(14));
-    } else if (check(Constant.OP.ST)) {
-      // ST
-      const rr = (this.ir >> 4) & 0xf;
-      this.register.set(14, this.register.get(rr));
-    } else if (check(Constant.OP.NOP)) {
-      // NOP
+      // 全部右移
+      i >>= 4;
+      o >>= 4;
     }
+    return true;
+  }
+
+  /**
+   * 获取下一个机器周期的索引
+   */
+  getNextCycleIndex() {
+    for (
+      let index = this.currentCycleIndex + 1;
+      index < this.cycle.length;
+      index++
+    ) {
+      if (Constant.M_PROGRAM[this.currentInstruction][this.cycle[index]]) {
+        return index;
+      }
+    }
+    this.currentInstructionIndex++;
+    return 0;
+  }
+
+  // 单步执行，最小步骤为一条微指令
+  step() {
+    // 复位alu的c0
+    this.alu.c0 = 0;
+
+    // 获取当前的微指令序列
+    let currentCycle = this.cycle[this.currentCycleIndex];
+    let currentInstructionObj;
+    if (currentCycle === "FT") {
+      currentInstructionObj = Constant.M_PROGRAM.ALL;
+    } else {
+      currentInstructionObj = Constant.M_PROGRAM[this.currentInstruction];
+    }
+
+    // 取出当前的微指令
+    const currentMInstruction =
+      currentInstructionObj[currentCycle][this.currentMInstructionIndex];
+    // 取出下一条微指令
+    const nextMInstruction =
+      currentInstructionObj[currentCycle][this.currentMInstructionIndex + 1];
+
+    // 取出当前的微指令并执行
+    if (currentMInstruction) {
+      runner[currentMInstruction](this);
+      if (nextMInstruction) {
+        this.currentMInstructionIndex++;
+        return;
+      }
+    }
+
+    if (this.cycle[this.currentCycleIndex] === "FT") {
+      // 译码
+      this.currentInstruction = "NOP";
+      for (const key in Constant.OP) {
+        if (this.check(Constant.OP[key])) {
+          this.currentInstruction = key;
+          break;
+        }
+      }
+
+      if (
+        this.currentInstruction === "ADD" ||
+        this.currentInstruction === "SUB" ||
+        this.currentInstruction === "MUL" ||
+        this.currentInstruction === "MOV"
+      ) {
+        this.Rd = (this.ir >> 4) & 0xf;
+        this.Rr = this.ir & 0xf;
+      }
+
+      if (this.currentInstruction === "RJMP") {
+        this.temp = this.ir & 0xfff;
+      }
+
+      if (this.currentInstruction === "BRMI") {
+        this.temp = this.ir & 0xff;
+        if (!(this.sr & Constant.F_NF)) {
+          this.currentMInstructionIndex = 0;
+          this.currentCycleIndex = 0;
+        }
+      }
+
+      if (this.currentInstruction === "LDI") {
+        this.temp = ((this.ir & 0xf00) >> 4) + (this.ir & 0xf);
+        this.Rd = (this.ir >> 4) & 0xf;
+      }
+
+      if (this.currentInstruction === "LD") {
+        this.Rd = (this.ir >> 4) & 0xf;
+        this.Rr = 14;
+      }
+
+      if (this.currentInstruction === "ST") {
+        this.Rd = 14;
+        this.Rr = (this.ir >> 4) & 0xf;
+      }
+    }
+
+    this.currentMInstructionIndex = 0;
+    this.currentCycleIndex = this.getNextCycleIndex();
   }
 }

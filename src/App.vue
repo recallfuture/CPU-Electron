@@ -27,7 +27,7 @@
         <!-- 汇编代码 -->
         <code-container
           @change="changeFile"
-          :pc="cpu.pc / 4"
+          :pc="cpu.currentInstructionIndex"
           :data="lines"
         ></code-container>
 
@@ -71,15 +71,14 @@ export default {
     },
     registerLeft() {
       return [
-        { name: "PC", value: formatNum(this.cpu.pc, 16, 2) },
-        { name: "BUS", value: formatNum(this.cpu.bus, 16, 2) },
-        { name: "IR", value: formatNum(this.cpu.ir, 16, 2) },
+        { name: "PC", value: formatNum(this.cpu.pc, 16, 4) },
+        { name: "BUS", value: formatNum(this.cpu.bus, 16, 4) },
+        { name: "IR", value: formatNum(this.cpu.ir, 16, 4) },
         { name: "RR", value: formatNum(this.cpu.rr, 16, 2) },
         { name: "RD", value: formatNum(this.cpu.rd, 16, 2) },
         { name: "TEMP", value: formatNum(this.cpu.temp, 16, 2) },
-        { name: "LA", value: formatNum(this.cpu.la, 16, 2) },
-        { name: "LB", value: formatNum(this.cpu.lb, 16, 2) },
-        { name: "LT", value: formatNum(this.cpu.lt, 16, 4) }
+        { name: "LA", value: formatNum(this.cpu.alu.la, 16, 2) },
+        { name: "LT", value: formatNum(this.cpu.alu.lt, 16, 4) }
       ];
     },
     registerRight() {
@@ -90,22 +89,22 @@ export default {
     },
     sr() {
       return [
-        { name: "ZF", value: this.cpu.alu.sr & Constant.F_ZF ? 1 : 0 },
-        { name: "NF", value: this.cpu.alu.sr & Constant.F_NF ? 1 : 0 },
-        { name: "CF", value: this.cpu.alu.sr & Constant.F_CF ? 1 : 0 },
-        { name: "VF", value: this.cpu.alu.sr & Constant.F_VF ? 1 : 0 },
-        { name: "SF", value: this.cpu.alu.sr & Constant.F_SF ? 1 : 0 },
-        { name: "HF", value: this.cpu.alu.sr & Constant.F_HF ? 1 : 0 },
-        { name: "TF", value: this.cpu.alu.sr & Constant.F_TF ? 1 : 0 },
-        { name: "IF", value: this.cpu.alu.sr & Constant.F_IF ? 1 : 0 }
+        { name: "ZF", value: this.cpu.sr & Constant.F_ZF ? 1 : 0 },
+        { name: "NF", value: this.cpu.sr & Constant.F_NF ? 1 : 0 },
+        { name: "CF", value: this.cpu.sr & Constant.F_CF ? 1 : 0 },
+        { name: "VF", value: this.cpu.sr & Constant.F_VF ? 1 : 0 },
+        { name: "SF", value: this.cpu.sr & Constant.F_SF ? 1 : 0 },
+        { name: "HF", value: this.cpu.sr & Constant.F_HF ? 1 : 0 },
+        { name: "TF", value: this.cpu.sr & Constant.F_TF ? 1 : 0 },
+        { name: "IF", value: this.cpu.sr & Constant.F_IF ? 1 : 0 }
       ];
     },
 
     lines() {
       return this.code.map((c, index) => ({
-        addr: formatNum(index * 4, 16, 2),
+        addr: formatNum(index, 16, 4),
         code: c,
-        instruction: formatNum(this.cpu.iMemory.readInt(index * 4), 16, 4)
+        instruction: formatNum(this.cpu.iMemory.readShort(index), 16, 4)
       }));
     }
   },
@@ -122,6 +121,10 @@ export default {
     reset() {
       this.cpu = new Cpu();
       this.parse();
+    },
+
+    test() {
+      // return Constant.M_PROGRAM.ALL.FT[this.cpu.currentMInstructionIndex];
     },
 
     changeFile(event) {
@@ -155,7 +158,7 @@ export default {
 
           // console.log(this.formatNum(parser(item), 16, 4));
           const instruction = parser(item);
-          this.cpu.iMemory.writeInt(index * 4, instruction);
+          this.cpu.iMemory.writeShort(index, instruction);
         }
       } catch (e) {
         alert(

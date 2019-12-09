@@ -104,7 +104,7 @@
 
 .code-line > span.line-number {
   display: inline-block;
-  width: 40px;
+  width: 50px;
   padding-right: 4px;
   text-align: right;
   color: #00c2ce;

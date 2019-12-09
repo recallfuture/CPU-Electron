@@ -1,27 +1,27 @@
 import Constant from "./constant";
 
 export default class Alu {
-  constructor() {
+  constructor(cpu) {
     this.la = 0; // 8位
-    this.lb = 0; // 8位
     this.lt = 0; // 16位，乘法需要
+    this.c0 = 0;
 
-    this.sr = 0; // 8位
+    this.cpu = cpu; // cpu的引用
   }
 
   /**
    * 相加
    */
   add() {
-    this.lt = this.la + this.lb;
-    this.sr &= 0xc0;
-    this.sr |=
+    this.lt = this.la + this.cpu.bus + this.c0;
+    this.cpu.sr &= 0xc0;
+    this.cpu.sr |=
       this.zFlag() |
       this.nFlag() |
       this.cFlag() |
       this.vFlag() |
       this.sFlag(this.nFlag(), this.vFlag()) |
-      this.hFlag(this.la, this.lb);
+      this.hFlag(this.la, this.cpu.bus);
     this.lt &= 0xffff;
   }
 
@@ -30,10 +30,10 @@ export default class Alu {
    */
   sub() {
     // 先求-lb，然后按照加法计算
-    this.temp = ((this.lb ^ 0xff) + 1) & 0xff;
-    this.lt = this.la + this.temp;
-    this.sr &= 0xc0;
-    this.sr |=
+    this.temp = ((this.cpu.bus ^ 0xff) + 1) & 0xff;
+    this.lt = this.la + this.temp + this.c0;
+    this.cpu.sr &= 0xc0;
+    this.cpu.sr |=
       this.zFlag() |
       this.nFlag() |
       this.cFlag() |
@@ -47,9 +47,9 @@ export default class Alu {
    * 无符号相乘
    */
   mul() {
-    this.lt = this.la + this.lb;
-    this.sr &= 0xfc;
-    this.sr |= this.zFlag() | this.cFlag();
+    this.lt = this.la + this.cpu.bus;
+    this.cpu.sr &= 0xfc;
+    this.cpu.sr |= this.zFlag() | this.cFlag();
     this.lt &= 0xffff;
   }
 
@@ -80,8 +80,8 @@ export default class Alu {
   // 有符号数益溢出标志位
   vFlag() {
     let cond = 0;
-    cond += this.la + this.lb;
-    cond += -(this.la > 127 ? 256 : 0) - (this.lb > 127 ? 256 : 0);
+    cond += this.la + this.cpu.bus;
+    cond += -(this.la > 127 ? 256 : 0) - (this.cpu.bus > 127 ? 256 : 0);
     if (cond < 0 || cond > 255) {
       return Constant.F_VF;
     }

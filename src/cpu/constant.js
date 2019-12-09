@@ -79,18 +79,22 @@ export default {
     G: "TEMP->BUS, 1->C0, ADD, ALU->LT",
     H: "Rd->BUS, BUS->RD",
     M: "RD->BUS, BUS->LA",
-    I1: "RR->BUS, MUL, ALU->LT",
+    I1: "RR->BUS, MUL",
     I2: "RR->BUS, ADD, ALU->LT",
     I3: "RR->BUS, SUB, ALU->LT",
-    L1: "LT->BUS, BUS->Ra",
+    L1: "ALU->LT, LT->BUS, BUS->Ra",
     L2: "LT->BUS, BUS->Rd",
     J: "RR->BUS, BUS->Rd",
-    K: "LT->BUS, BUS->PC"
+    K: "LT->BUS, BUS->PC",
+    Z: "空操作"
   },
 
   // 微程序
   // FT阶段都是A,B,C
   M_PROGRAM: {
+    ALL: {
+      FT: ["A", "B", "C"]
+    },
     ADD: {
       ST: ["F"],
       DT: ["H"],
@@ -104,7 +108,7 @@ export default {
     MUL: {
       ST: ["F"],
       DT: ["H"],
-      ET: ["M", "I1", "L1"]
+      ET: ["M", "I1", "M", "M", "L1"]
     },
     RJMP: {
       ET: ["D", "G", "K"]
@@ -117,7 +121,7 @@ export default {
       ET: ["J"]
     },
     LDI: {
-      ET: ["E", "J"]
+      ET: ["E"]
     },
     LD: {
       ST: ["F"],
