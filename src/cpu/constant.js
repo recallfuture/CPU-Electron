@@ -73,13 +73,15 @@ export default {
     A: "PC->BUS, BUS->IMAR, READ, CLEAR LA, 1->C0, ADD, ALU->LT",
     B: "LT->BUS, BUS->PC, WAIT",
     C: "IMDR->BUS, BUS->IR",
+    D: "PC-BUS, BUS->LA",
     E: "TEMP->BUS, BUS->Rd",
     F: "Rs->BUS, BUS->RR",
-    G: "PC-BUS, BUS->LA, TEMP->BUS, 1->C0, ADD, ALU->LT",
+    G: "TEMP->BUS, 1->C0, ADD, ALU->LT",
     H: "Rd->BUS, BUS->RD",
-    I1: "RD->BUS, BUS->LA, RR->BUS, MUL, ALU->LT",
-    I2: "RD->BUS, BUS->LA, RR->BUS, ADD, ALU->LT",
-    I3: "RD->BUS, BUS->LA, RR->BUS, SUB, ALU->LT",
+    M: "RD->BUS, BUS->LA",
+    I1: "RR->BUS, MUL, ALU->LT",
+    I2: "RR->BUS, ADD, ALU->LT",
+    I3: "RR->BUS, SUB, ALU->LT",
     L1: "LT->BUS, BUS->Ra",
     L2: "LT->BUS, BUS->Rd",
     J: "RR->BUS, BUS->Rd",
@@ -92,20 +94,20 @@ export default {
     ADD: {
       ST: ["F"],
       DT: ["H"],
-      ET: ["I2", "L2"]
+      ET: ["M", "I2", "L2"]
     },
     SUB: {
       ST: ["F"],
       DT: ["H"],
-      ET: ["I3", "L2"]
+      ET: ["M", "I3", "L2"]
     },
     MUL: {
       ST: ["F"],
       DT: ["H"],
-      ET: ["I1", "L1"]
+      ET: ["M", "I1", "L1"]
     },
     RJMP: {
-      ET: ["G", "K"]
+      ET: ["D", "G", "K"]
     },
     BRMI: {
       ET: ["K", "K"]
