@@ -33,10 +33,10 @@ decode[Constant.OP.MUL] = function(rd, rr) {
   return Constant.OP.MUL + (Constant[rd] << 4) + Constant[rr];
 };
 
-decode[Constant.OP.RJUMP] = function(k) {
+decode[Constant.OP.RJMP] = function(k) {
   let kNum = parseInt(k, 16);
   kNum = kNum ? kNum & 0xfff : 0;
-  return Constant.OP.RJUMP + kNum;
+  return Constant.OP.RJMP + kNum;
 };
 
 decode[Constant.OP.BRMI] = function(k) {

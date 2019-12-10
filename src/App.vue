@@ -82,7 +82,7 @@ export default {
         { name: "IR", value: formatNum(this.cpu.ir, 16, 4) },
         { name: "RR", value: formatNum(this.cpu.rr, 16, 2) },
         { name: "RD", value: formatNum(this.cpu.rd, 16, 2) },
-        { name: "TEMP", value: formatNum(this.cpu.temp, 16, 2) },
+        { name: "TEMP", value: formatNum(this.cpu.temp, 16, 4) },
         { name: "LA", value: formatNum(this.cpu.alu.la, 16, 2) },
         { name: "LT", value: formatNum(this.cpu.alu.lt, 16, 4) }
       ];

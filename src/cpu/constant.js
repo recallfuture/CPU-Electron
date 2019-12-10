@@ -6,7 +6,7 @@ export default {
     ADD: 0x0c00,
     SUB: 0x0800,
     MUL: 0x9c00,
-    RJUMP: 0xc000,
+    RJMP: 0xc000,
     BRMI: 0xf100,
     MOV: 0x2c00,
     LDI: 0xe000,

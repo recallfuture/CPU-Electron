@@ -5,7 +5,7 @@ export default {
   A(cpu) {
     cpu.bus = cpu.pc;
     cpu.imar = cpu.bus;
-    cpu.la = 0;
+    cpu.alu.la = 0;
     cpu.alu.c0 = 1;
     cpu.alu.add();
   },

@@ -47,7 +47,7 @@ export default class Alu {
    * 无符号相乘
    */
   mul() {
-    this.lt = this.la + this.cpu.bus;
+    this.lt = this.la * this.cpu.bus;
     this.cpu.sr &= 0xfc;
     this.cpu.sr |= this.zFlag() | this.cFlag();
     this.lt &= 0xffff;

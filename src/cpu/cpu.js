@@ -81,7 +81,7 @@ export default class Cpu {
         return index;
       }
     }
-    this.currentInstructionIndex++;
+    this.currentInstructionIndex = this.pc;
     return 0;
   }
 
@@ -162,6 +162,7 @@ export default class Cpu {
       if (this.currentInstruction === "BRMI") {
         this.temp = this.ir & 0xff;
         if (!(this.sr & Constant.F_NF)) {
+          this.currentInstructionIndex = this.pc;
           this.currentMInstructionIndex = 0;
           this.currentCycleIndex = 0;
         }

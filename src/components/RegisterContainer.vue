@@ -8,7 +8,7 @@
       <div
         v-for="(item, index) in list"
         :key="index"
-        :ref="'index' + index"
+        ref="registers"
         class="register"
         style="transition-duration: 200ms; color: rgb(55, 243, 255); background-color: rgb(11, 11, 11); transition-delay: 100ms;"
       >
@@ -49,7 +49,7 @@ export default {
         newValue.forEach((val, index) => {
           const old = oldValue[index];
           if (val.name !== old.name || val.value !== old.value) {
-            move(this.$refs["index" + index][0])
+            move(this.$refs.registers[index])
               .set("color", "#0B0B0B")
               .set("background-color", "#37F3FF")
               .duration("0s")
