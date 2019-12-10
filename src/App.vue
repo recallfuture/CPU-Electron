@@ -3,7 +3,9 @@
     <div>
       <!-- 控制面板 -->
       <control-container
+        :auto="!!auto"
         @run="run"
+        @stop="stop"
         @step="step"
         @reset="reset"
       ></control-container>
@@ -116,10 +118,16 @@ export default {
     run() {
       this.auto = setInterval(() => {
         if (!this.step()) {
-          clearInterval(this.auto);
-          this.auto = null;
+          this.stop();
         }
       }, 100);
+    },
+
+    stop() {
+      if (this.auto) {
+        clearInterval(this.auto);
+        this.auto = null;
+      }
     },
 
     step() {
@@ -143,6 +151,7 @@ export default {
     },
 
     reset() {
+      this.stop();
       this.cpu = new Cpu();
       this.mLines = [];
       this.halt = false;

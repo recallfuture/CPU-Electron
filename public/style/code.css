@@ -4,10 +4,11 @@
   height: 100%;
 }
 
-.code-container pre {
+.code-container > pre {
   flex-grow: 1;
   margin: 0;
   padding: 2px;
+  padding-bottom: 1.2em;
   max-height: calc(100% - 30px);
   border: 1px solid #37f3ff;
   white-space: inherit;
@@ -15,7 +16,7 @@
   height: 100%;
 }
 
-.code-container pre > code {
+.code-container > pre > code {
   position: relative;
   display: block;
   min-width: 100%;
