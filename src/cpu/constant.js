@@ -108,7 +108,7 @@ export default {
     MUL: {
       ST: ["F"],
       DT: ["H"],
-      ET: ["M", "I1", "M", "M", "L1"]
+      ET: ["M", "I1", "Z", "Z", "L1"]
     },
     RJMP: {
       ET: ["D", "G", "K"]

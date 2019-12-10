@@ -29,6 +29,7 @@
           @change="changeFile"
           :pc="cpu.currentInstructionIndex"
           :data="lines"
+          :mData="mLines"
         ></code-container>
 
         <!-- 通用寄存器 -->
@@ -57,7 +58,10 @@ export default {
       cpu: new Cpu(),
 
       file: undefined,
-      code: []
+      code: [],
+      mLines: [],
+
+      auto: null
     };
   },
   components: {
@@ -109,22 +113,40 @@ export default {
     }
   },
   methods: {
-    run() {},
+    run() {
+      this.auto = setInterval(() => {
+        if (!this.step()) {
+          clearInterval(this.auto);
+          this.auto = null;
+        }
+      }, 100);
+    },
 
     step() {
-      if (this.halt) {
-        return;
+      if (this.cpu.currentInstructionIndex >= this.code.length) {
+        this.cpu.currentInstructionIndex = 0;
+        this.halt = true;
+        return false;
       }
+
+      if (this.halt) {
+        return false;
+      }
+
+      this.mLines.push({
+        cycle: this.cpu.cycle[this.cpu.currentCycleIndex],
+        mInstruction: Constant.M_INSTRUCTION[this.cpu.getCurrentMInstruction()]
+      });
+
       this.cpu.step();
+      return true;
     },
 
     reset() {
       this.cpu = new Cpu();
+      this.mLines = [];
+      this.halt = false;
       this.parse();
-    },
-
-    test() {
-      // return Constant.M_PROGRAM.ALL.FT[this.cpu.currentMInstructionIndex];
     },
 
     changeFile(event) {

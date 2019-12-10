@@ -85,28 +85,48 @@ export default class Cpu {
     return 0;
   }
 
+  /**
+   * 获取当前微程序
+   */
+  getCurrentMProgram() {
+    const currentCycle = this.cycle[this.currentCycleIndex];
+    if (currentCycle === "FT") {
+      return Constant.M_PROGRAM.ALL;
+    } else {
+      return Constant.M_PROGRAM[this.currentInstruction];
+    }
+  }
+
+  /**
+   * 获取当前将要执行的微指令
+   */
+  getCurrentMInstruction() {
+    const currentCycle = this.cycle[this.currentCycleIndex];
+    const currentMProgram = this.getCurrentMProgram();
+
+    return currentMProgram[currentCycle][this.currentMInstructionIndex];
+  }
+
+  /**
+   * 获取下次将要执行的微指令
+   */
+  getNextMInstruction() {
+    const currentCycle = this.cycle[this.currentCycleIndex];
+    const currentMProgram = this.getCurrentMProgram();
+    return currentMProgram[currentCycle][this.currentMInstructionIndex + 1];
+  }
+
   // 单步执行，最小步骤为一条微指令
   step() {
     // 复位alu的c0
     this.alu.c0 = 0;
 
-    // 获取当前的微指令序列
-    let currentCycle = this.cycle[this.currentCycleIndex];
-    let currentInstructionObj;
-    if (currentCycle === "FT") {
-      currentInstructionObj = Constant.M_PROGRAM.ALL;
-    } else {
-      currentInstructionObj = Constant.M_PROGRAM[this.currentInstruction];
-    }
-
     // 取出当前的微指令
-    const currentMInstruction =
-      currentInstructionObj[currentCycle][this.currentMInstructionIndex];
+    const currentMInstruction = this.getCurrentMInstruction();
     // 取出下一条微指令
-    const nextMInstruction =
-      currentInstructionObj[currentCycle][this.currentMInstructionIndex + 1];
+    const nextMInstruction = this.getNextMInstruction();
 
-    // 取出当前的微指令并执行
+    // 执行当前的微指令
     if (currentMInstruction) {
       runner[currentMInstruction](this);
       if (nextMInstruction) {

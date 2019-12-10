@@ -71,5 +71,6 @@ export default {
   L2(cpu) {
     cpu.bus = cpu.alu.lt;
     cpu.register.set(cpu.Rd, cpu.bus & 0xff);
-  }
+  },
+  Z() {}
 };
