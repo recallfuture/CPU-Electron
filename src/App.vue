@@ -30,8 +30,8 @@
         <code-container
           @change="changeFile"
           :instructionIndex="cpu.currentInstructionIndex"
-          :instructions="lines"
-          :mInstructions="mLines"
+          :instructions="instructions"
+          :mInstructions="mInstructions"
         ></code-container>
 
         <!-- 通用寄存器 -->
@@ -56,12 +56,11 @@ export default {
   name: "app",
   data() {
     return {
-      halt: true,
       cpu: new Cpu(),
 
-      file: undefined,
-      code: [],
-      mLines: [],
+      fileContent: "",
+      instructions: [],
+      mInstructions: [],
 
       auto: null
     };
@@ -72,9 +71,6 @@ export default {
     CodeContainer
   },
   computed: {
-    constant() {
-      return Constant;
-    },
     registerLeft() {
       return [
         { name: "PC", value: formatNum(this.cpu.pc, 16, 4) },
@@ -104,14 +100,6 @@ export default {
         { name: "TF", value: this.cpu.sr & Constant.F_TF ? 1 : 0 },
         { name: "IF", value: this.cpu.sr & Constant.F_IF ? 1 : 0 }
       ];
-    },
-
-    lines() {
-      return this.code.map((c, index) => ({
-        addr: formatNum(index, 16, 4),
-        code: c,
-        bCode: formatNum(this.cpu.iMemory.readShort(index), 16, 4)
-      }));
     }
   },
   methods: {
@@ -131,17 +119,11 @@ export default {
     },
 
     step() {
-      if (this.cpu.currentInstructionIndex >= this.code.length) {
-        this.cpu.currentInstructionIndex = 0;
-        this.halt = true;
+      if (this.cpu.currentInstructionIndex >= this.instructions.length) {
         return false;
       }
 
-      if (this.halt) {
-        return false;
-      }
-
-      this.mLines.push({
+      this.mInstructions.push({
         cycle: this.cpu.cycle[this.cpu.currentCycleIndex],
         code: Constant.M_INSTRUCTION[this.cpu.getCurrentMInstruction()]
       });
@@ -153,50 +135,58 @@ export default {
     reset() {
       this.stop();
       this.cpu = new Cpu();
-      this.mLines = [];
-      this.halt = false;
+      this.mInstructions = [];
       this.parse();
     },
 
     changeFile(event) {
       //获取读取我文件的File对象
       const selectedFile = event.target.files[0];
-      this.file = selectedFile;
       this.readFile(selectedFile);
     },
 
     readFile(file) {
-      //这是核心,读取操作就是由它完成.
       const reader = new FileReader();
 
       //读取文件的内容,也可以读取文件的URL
       reader.readAsText(file);
       reader.onload = () => {
         //当读取完成后回调这个函数,然后此时文件的内容存储到了result中,直接操作即可
-        this.code = reader.result.split("\n");
-        this.code.pop();
+        this.fileContent = reader.result;
         this.parse();
-        this.halt = false;
       };
     },
 
+    // 解析汇编
     parse() {
-      let index;
-      try {
-        for (index = 0; index < this.code.length; index++) {
-          const item = this.code[index];
-          if (!item) continue;
+      if (!this.fileContent) {
+        return;
+      }
 
-          // console.log(this.formatNum(parser(item), 16, 4));
-          const instruction = parser(item);
-          this.cpu.iMemory.writeShort(index, instruction);
+      // 按行分割
+      const lines = this.fileContent.split("\n");
+      // 清空
+      this.instructions = [];
+
+      for (let index = 0; index < lines.length; index++) {
+        const code = lines[index];
+        if (!code || !code.trim()) continue;
+
+        try {
+          const bCode = parser(code);
+          this.cpu.iMemory.writeShort(index, bCode);
+          this.instructions.push({
+            code,
+            bCode: formatNum(bCode, 16, 4)
+          });
+        } catch (e) {
+          alert(
+            `读取失败\n` +
+              `第${index + 1}行:${lines[index]}\n` +
+              `原因是：${e.message}`
+          );
+          break;
         }
-      } catch (e) {
-        alert(
-          `读取失败\n` +
-            `${index + 1}:${this.code[index]}\n` +
-            `原因是：${e.message}`
-        );
       }
     }
   }

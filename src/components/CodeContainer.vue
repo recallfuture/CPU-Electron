@@ -9,7 +9,7 @@
       <pre ref="instruction">
         <code>
           <div class="code-line-indicator" v-show="instructions.length > 0" :style="{top: instructionIndex * 1.2 + 'em'}"></div>
-          <div class="code-line" v-for="(item, index) in instructions" :key="index"><span class="line-number">0x{{ item.addr }}</span><span>  {{ item.bCode }}  |  {{ item.code }}</span></div>
+          <div class="code-line" v-for="(item, index) in instructions" :key="index"><span class="line-number">0x{{ formatNum(index, 16, 4) }}</span><span>  {{ item.bCode }}  |  {{ item.code }}</span></div>
         </code>
       </pre>
     </div>
@@ -27,6 +27,8 @@
 </template>
 
 <script>
+import { formatNum } from "../utils";
+
 export default {
   name: "CodeContainer",
   props: {
@@ -37,7 +39,7 @@ export default {
 
     // 所有指令
     // [
-    //    { addr: "", code: "", bCode:"" },
+    //    { code: "", bCode:"" },
     // ]
     instructions: {
       type: Array,
@@ -55,6 +57,8 @@ export default {
   },
 
   methods: {
+    formatNum,
+
     cycleClass(cycle) {
       return {
         FT: cycle === "FT",
