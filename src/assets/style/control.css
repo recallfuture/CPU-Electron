@@ -1,7 +1,6 @@
 .control-container > div {
   display: flex;
   display: -webkit-flex;
-  width: 300px;
   padding-bottom: 10px;
   font-size: 0;
   flex-direction: row;

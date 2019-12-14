@@ -4,8 +4,10 @@
       <div>
         <button v-show="!autostep" @click="$emit('run')">全部执行</button>
         <button v-show="autostep" @click="$emit('stop')">停止执行</button>
-        <button @click="$emit('step')">单步执行</button>
+        <button @click="$emit('previous')">上一步</button>
+        <button @click="$emit('step')">下一步</button>
         <button @click="$emit('reset')">重置</button>
+        <button @click="$emit('save')">保存日志</button>
       </div>
     </div>
   </div>

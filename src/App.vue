@@ -6,25 +6,29 @@
         :autostep="!!auto"
         @run="run"
         @stop="stop"
+        @previous="previous"
         @step="step"
         @reset="reset"
+        @save="save"
       ></control-container>
 
       <!-- 主区域-->
       <div class="flex-container justify-center top-line flex-grow">
-        <!-- 状态寄存器 -->
-        <register-container
-          left
-          :title="'状态位'"
-          :items="sr"
-        ></register-container>
+        <div class="flex-container" style="flex-direction: column;">
+          <!-- 普通寄存器 -->
+          <register-container
+            left
+            :title="'寄存器'"
+            :items="registerLeft"
+          ></register-container>
 
-        <!-- 普通寄存器 -->
-        <register-container
-          left
-          :title="'寄存器'"
-          :items="registerLeft"
-        ></register-container>
+          <!-- 状态寄存器 -->
+          <register-container
+            left
+            :title="'状态位'"
+            :items="sr"
+          ></register-container>
+        </div>
 
         <!-- 汇编代码 -->
         <code-container
@@ -37,7 +41,7 @@
         <!-- 通用寄存器 -->
         <register-container
           right
-          :title="'通用寄存器'"
+          :title="'寄存器'"
           :items="registerRight"
         ></register-container>
       </div>
@@ -52,6 +56,9 @@ import ControlContainer from "./components/ControlContainer";
 import RegisterContainer from "./components/RegisterContainer";
 import CodeContainer from "./components/CodeContainer";
 
+import * as _ from "lodash";
+import { saveAs } from "file-saver";
+
 export default {
   name: "app",
   data() {
@@ -62,7 +69,8 @@ export default {
       instructions: [],
       mInstructions: [],
 
-      auto: null
+      auto: null,
+      history: []
     };
   },
   components: {
@@ -118,10 +126,25 @@ export default {
       }
     },
 
+    previous() {
+      if (!this.history) {
+        return;
+      }
+
+      const item = this.history.pop();
+      this.cpu = item.cpu;
+      this.mInstructions = item.mInstructions;
+    },
+
     step() {
       if (this.cpu.currentInstructionIndex >= this.instructions.length) {
         return false;
       }
+
+      this.history.push({
+        cpu: _.cloneDeepWith(this.cpu),
+        mInstructions: _.cloneDeepWith(this.mInstructions)
+      });
 
       this.mInstructions.push({
         cycle: this.cpu.cycle[this.cpu.currentCycleIndex],
@@ -134,12 +157,66 @@ export default {
 
     reset() {
       this.stop();
-      this.cpu = new Cpu();
-      this.mInstructions = [];
       this.parse();
     },
 
+    save() {
+      if (!this.instructions) {
+        return;
+      }
+
+      let str = "\n";
+
+      str += "指令存储器：";
+      for (const i of this.instructions) {
+        str += `${i.bCode}: ${i.code}\n`;
+      }
+
+      str += "\n微周期：\n";
+      for (const h of this.history) {
+        if (h.mInstructions.length === 0) {
+          continue;
+        }
+
+        str += `\n当前指令：${
+          this.instructions[h.cpu.currentInstructionIndex].code
+        }\n`;
+        str += `当前机器周期：${h.cpu.cycle[h.cpu.currentCycleIndex]}\n`;
+        str += `当前微指令：${
+          h.mInstructions[h.mInstructions.length - 1].code
+        }\n`;
+
+        str += `ZF：${h.cpu.sr & Constant.F_ZF ? 1 : 0}\n`;
+        str += `NF：${h.cpu.sr & Constant.F_NF ? 1 : 0}\n`;
+        str += `CF：${h.cpu.sr & Constant.F_CF ? 1 : 0}\n`;
+        str += `VF：${h.cpu.sr & Constant.F_VF ? 1 : 0}\n`;
+        str += `SF：${h.cpu.sr & Constant.F_SF ? 1 : 0}\n`;
+        str += `HF：${h.cpu.sr & Constant.F_HF ? 1 : 0}\n`;
+        str += `TF：${h.cpu.sr & Constant.F_TF ? 1 : 0}\n`;
+        str += `IF：${h.cpu.sr & Constant.F_IF ? 1 : 0}\n`;
+
+        str += `pc：0x${formatNum(h.cpu.pc, 16, 4)}\n`;
+        str += `bus：0x${formatNum(h.cpu.bus, 16, 4)}\n`;
+        str += `ir：0x${formatNum(h.cpu.ir, 16, 4)}\n`;
+        str += `rr：0x${formatNum(h.cpu.rr, 16, 2)}\n`;
+        str += `rd：0x${formatNum(h.cpu.rd, 16, 2)}\n`;
+        str += `temp：0x${formatNum(h.cpu.temp, 16, 4)}\n`;
+        str += `la：0x${formatNum(h.cpu.alu.la, 16, 2)}\n`;
+        str += `lt：0x${formatNum(h.cpu.alu.lt, 16, 4)}\n`;
+
+        Constant.REGISTERS.forEach(item => {
+          str += `${item}：0x${formatNum(h.cpu.register.get(item), 16, 2)}\n`;
+        });
+      }
+
+      var blob = new Blob([str], {
+        type: "text/plain;charset=utf-8"
+      });
+      saveAs(blob, "output.txt");
+    },
+
     changeFile(event) {
+      this.stop();
       //获取读取我文件的File对象
       const selectedFile = event.target.files[0];
       this.readFile(selectedFile);
@@ -167,6 +244,9 @@ export default {
       const lines = this.fileContent.split("\n");
       // 清空
       this.instructions = [];
+      this.mInstructions = [];
+      this.cpu = new Cpu();
+      this.history = [];
 
       for (let index = 0; index < lines.length; index++) {
         const code = lines[index];
