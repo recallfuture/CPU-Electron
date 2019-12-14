@@ -3,7 +3,7 @@
     <div>
       <!-- 控制面板 -->
       <control-container
-        :auto="!!auto"
+        :autostep="!!auto"
         @run="run"
         @stop="stop"
         @step="step"
@@ -16,29 +16,29 @@
         <register-container
           left
           :title="'状态位'"
-          :list="sr"
+          :items="sr"
         ></register-container>
 
         <!-- 普通寄存器 -->
         <register-container
           left
           :title="'寄存器'"
-          :list="registerLeft"
+          :items="registerLeft"
         ></register-container>
 
         <!-- 汇编代码 -->
         <code-container
           @change="changeFile"
-          :pc="cpu.currentInstructionIndex"
-          :data="lines"
-          :mData="mLines"
+          :instructionIndex="cpu.currentInstructionIndex"
+          :instructions="lines"
+          :mInstructions="mLines"
         ></code-container>
 
         <!-- 通用寄存器 -->
         <register-container
           right
           :title="'通用寄存器'"
-          :list="registerRight"
+          :items="registerRight"
         ></register-container>
       </div>
     </div>
@@ -110,7 +110,7 @@ export default {
       return this.code.map((c, index) => ({
         addr: formatNum(index, 16, 4),
         code: c,
-        instruction: formatNum(this.cpu.iMemory.readShort(index), 16, 4)
+        bCode: formatNum(this.cpu.iMemory.readShort(index), 16, 4)
       }));
     }
   },
@@ -143,7 +143,7 @@ export default {
 
       this.mLines.push({
         cycle: this.cpu.cycle[this.cpu.currentCycleIndex],
-        mInstruction: Constant.M_INSTRUCTION[this.cpu.getCurrentMInstruction()]
+        code: Constant.M_INSTRUCTION[this.cpu.getCurrentMInstruction()]
       });
 
       this.cpu.step();

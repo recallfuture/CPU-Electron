@@ -6,11 +6,10 @@
     <h3>{{ title }}</h3>
     <div>
       <div
-        v-for="(item, index) in list"
+        v-for="(item, index) in items"
         :key="index"
         ref="registers"
         class="register"
-        style="transition-duration: 200ms; color: rgb(55, 243, 255); background-color: rgb(11, 11, 11); transition-delay: 100ms;"
       >
         <div class="register-name">{{ item.name }}</div>
         <div class="register-data">{{ item.value }}</div>
@@ -35,32 +34,37 @@ export default {
     title: {
       type: String
     },
-    list: {
+    items: {
       type: Array,
       default: () => []
     }
   },
   methods: {
-    formatNum
+    formatNum,
+
+    animate(index) {
+      move(this.$refs.registers[index])
+        .set("color", "#0B0B0B")
+        .set("background-color", "#37F3FF")
+        .duration("0s")
+        .delay("0s")
+        .then()
+        .set("color", "#37F3FF")
+        .set("background-color", "#0B0B0B")
+        .duration(".2s")
+        .delay(".1s")
+        .pop()
+        .end();
+    }
   },
   watch: {
-    list: {
+    items: {
       handler: function(newValue, oldValue) {
+        // 找到变动的数值，并在其上显示动画
         newValue.forEach((val, index) => {
           const old = oldValue[index];
           if (val.name !== old.name || val.value !== old.value) {
-            move(this.$refs.registers[index])
-              .set("color", "#0B0B0B")
-              .set("background-color", "#37F3FF")
-              .duration("0s")
-              .delay("0s")
-              .then()
-              .set("color", "#37F3FF")
-              .set("background-color", "#0B0B0B")
-              .duration(".2s")
-              .delay(".1s")
-              .pop()
-              .end();
+            this.animate(index);
           }
         });
       },
