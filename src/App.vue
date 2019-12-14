@@ -203,4 +203,15 @@ export default {
 };
 </script>
 
-<style lang="stylus"></style>
+<style lang="stylus">
+@import url('assets/style/main.css');
+@import url('assets/style/board.css');
+@import url('assets/style/register.css');
+@import url('assets/style/stack.css');
+@import url('assets/style/clock.css');
+@import url('assets/style/condition.css');
+@import url('assets/style/control.css');
+@import url('assets/style/cpi.css');
+@import url('assets/style/code.css');
+@import url('assets/style/pipe.css');
+</style>
