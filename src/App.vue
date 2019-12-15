@@ -170,7 +170,8 @@ export default {
     },
 
     save() {
-      if (!this.instructions) {
+      if (!this.instructions || this.instructions.length === 0) {
+        alert("请先在【指令存储器】旁选择汇编文件");
         return;
       }
 
@@ -191,9 +192,11 @@ export default {
           this.instructions[h.cpu.currentInstructionIndex].code
         }\n`;
         str += `当前机器周期：${h.cpu.cycle[h.cpu.currentCycleIndex]}\n`;
-        str += `当前微指令：${
-          h.mInstructions[h.mInstructions.length - 1].code
-        }\n`;
+        str += `当前微指令：${formatNum(
+          h.mInstructions[h.mInstructions.length - 1].code,
+          16,
+          4
+        )}\n`;
 
         str += `ZF：${h.cpu.sr & Constant.F_ZF ? 1 : 0}\n`;
         str += `NF：${h.cpu.sr & Constant.F_NF ? 1 : 0}\n`;
