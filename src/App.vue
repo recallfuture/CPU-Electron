@@ -14,21 +14,12 @@
 
       <!-- 主区域-->
       <div class="flex-container justify-center top-line flex-grow">
-        <div class="flex-container" style="flex-direction: column;">
-          <!-- 普通寄存器 -->
-          <register-container
-            left
-            :title="'寄存器'"
-            :items="registerLeft"
-          ></register-container>
-
-          <!-- 状态寄存器 -->
-          <register-container
-            left
-            :title="'状态位'"
-            :items="sr"
-          ></register-container>
-        </div>
+        <!-- 状态寄存器 -->
+        <register-container
+          left
+          :title="'状态位'"
+          :items="sr"
+        ></register-container>
 
         <!-- 汇编代码 -->
         <code-container
@@ -38,6 +29,12 @@
           :mInstructions="mInstructions"
         ></code-container>
 
+        <!-- 普通寄存器 -->
+        <register-container
+          right
+          :title="'寄存器'"
+          :items="registerLeft"
+        ></register-container>
         <!-- 通用寄存器 -->
         <register-container
           right
@@ -155,9 +152,21 @@ export default {
       return true;
     },
 
+    clear() {
+      // 清空
+      this.cpu = new Cpu();
+      this.mInstructions = [];
+      this.history = [];
+    },
+
     reset() {
       this.stop();
-      this.parse();
+      this.clear();
+
+      // 重新写入指令
+      for (let index = 0; index < this.instructions.length; index++) {
+        this.cpu.iMemory.writeShort(index, this.instructions[index].bCode);
+      }
     },
 
     save() {
@@ -167,7 +176,7 @@ export default {
 
       let str = "\n";
 
-      str += "指令存储器：";
+      str += "指令存储器：\n";
       for (const i of this.instructions) {
         str += `${i.bCode}: ${i.code}\n`;
       }
@@ -216,10 +225,11 @@ export default {
     },
 
     changeFile(event) {
-      this.stop();
+      this.clear();
       //获取读取我文件的File对象
       const selectedFile = event.target.files[0];
       this.readFile(selectedFile);
+      event.target.value = "";
     },
 
     readFile(file) {
@@ -242,11 +252,7 @@ export default {
 
       // 按行分割
       const lines = this.fileContent.split("\n");
-      // 清空
       this.instructions = [];
-      this.mInstructions = [];
-      this.cpu = new Cpu();
-      this.history = [];
 
       for (let index = 0; index < lines.length; index++) {
         const code = lines[index];
@@ -257,7 +263,7 @@ export default {
           this.cpu.iMemory.writeShort(index, bCode);
           this.instructions.push({
             code,
-            bCode: formatNum(bCode, 16, 4)
+            bCode
           });
         } catch (e) {
           alert(

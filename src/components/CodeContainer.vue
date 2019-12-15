@@ -8,8 +8,12 @@
       </h2>
       <pre ref="instruction">
         <code>
-          <div class="code-line-indicator" v-show="instructions.length > 0" :style="{top: instructionIndex * 1.2 + 'em'}"></div>
-          <div class="code-line" v-for="(item, index) in instructions" :key="index"><span class="line-number">0x{{ formatNum(index, 16, 4) }}</span><span>  {{ item.bCode }}  |  {{ item.code }}</span></div>
+          <div
+            class="code-line-indicator"
+            v-show="instructions.length > 0"
+            :style="{top: instructionIndex * 1.2 + 'em'}"
+          ></div>
+          <div class="code-line" v-for="(item, index) in instructions" :key="index"><span class="line-number">0x{{ formatNum(index, 16, 4) }}</span><span>  {{ formatNum(item.bCode, 16, 4) }}  |  {{ item.code }}</span></div>
         </code>
       </pre>
     </div>
@@ -18,7 +22,11 @@
       <h2 class="active"><span class="tab"></span>微指令</h2>
       <pre ref="mInstruction">
         <code>
-          <div class="code-line-indicator" v-show="mInstructions.length > 0" :style="{top: (mInstructions.length-1) * 1.2 + 'em'}"></div>
+          <div
+            class="code-line-indicator"
+            v-show="mInstructions.length > 0"
+            :style="{top: (mInstructions.length-1) * 1.2 + 'em'}"
+          ></div>
           <div class="code-line" v-for="(item, index) in mInstructions" :key="index"><span class="line-number" :class="cycleClass(item.cycle)">{{ item.cycle }}</span><span>  {{ item.code }}  </span></div>
         </code>
       </pre>
