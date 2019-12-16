@@ -96,14 +96,14 @@ export default {
     },
     sr() {
       return [
-        { name: "ZF", value: this.cpu.sr & Constant.F_ZF ? 1 : 0 },
-        { name: "NF", value: this.cpu.sr & Constant.F_NF ? 1 : 0 },
-        { name: "CF", value: this.cpu.sr & Constant.F_CF ? 1 : 0 },
-        { name: "VF", value: this.cpu.sr & Constant.F_VF ? 1 : 0 },
-        { name: "SF", value: this.cpu.sr & Constant.F_SF ? 1 : 0 },
-        { name: "HF", value: this.cpu.sr & Constant.F_HF ? 1 : 0 },
-        { name: "TF", value: this.cpu.sr & Constant.F_TF ? 1 : 0 },
-        { name: "IF", value: this.cpu.sr & Constant.F_IF ? 1 : 0 }
+        { name: "ZF", value: this.cpu.sr.ZF },
+        { name: "NF", value: this.cpu.sr.NF },
+        { name: "CF", value: this.cpu.sr.CF },
+        { name: "VF", value: this.cpu.sr.VF },
+        { name: "SF", value: this.cpu.sr.SF },
+        { name: "HF", value: this.cpu.sr.HF },
+        { name: "TF", value: this.cpu.sr.TF },
+        { name: "IF", value: this.cpu.sr.IF }
       ];
     }
   },

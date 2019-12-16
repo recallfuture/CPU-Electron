@@ -19,7 +19,16 @@ export default class Cpu {
     this.temp = 0;
 
     // 状态寄存器
-    this.sr = 0;
+    this.sr = {
+      CF: 0,
+      ZF: 0,
+      NF: 0,
+      VF: 0,
+      SF: 0,
+      HF: 0,
+      TF: 0,
+      IF: 0
+    };
 
     // 通用寄存器
     this.register = new Register();
