@@ -167,8 +167,12 @@ export default {
         return false;
       }
 
+      // 解决循环引用无法拷贝的问题
+      const cpu = _.cloneDeepWith(this.cpu);
+      cpu.alu.cpu = cpu;
+
       this.history.push({
-        cpu: _.cloneDeepWith(this.cpu),
+        cpu,
         mInstructions: _.cloneDeepWith(this.mInstructions)
       });
 
