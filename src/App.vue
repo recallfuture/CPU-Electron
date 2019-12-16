@@ -52,6 +52,7 @@ import { Cpu, Constant, parser } from "./cpu";
 import ControlContainer from "./components/ControlContainer";
 import RegisterContainer from "./components/RegisterContainer";
 import CodeContainer from "./components/CodeContainer";
+import eventBus from "./event-bus";
 
 import * as _ from "lodash";
 import { saveAs } from "file-saver";
@@ -60,7 +61,7 @@ export default {
   name: "app",
   data() {
     return {
-      cpu: new Cpu(),
+      cpu: this.createCpu(),
 
       fileContent: "",
       instructions: [],
@@ -78,14 +79,14 @@ export default {
   computed: {
     registerLeft() {
       return [
-        { name: "PC", value: formatNum(this.cpu.pc, 16, 4) },
-        { name: "BUS", value: formatNum(this.cpu.bus, 16, 4) },
-        { name: "IR", value: formatNum(this.cpu.ir, 16, 4) },
-        { name: "RR", value: formatNum(this.cpu.rr, 16, 2) },
-        { name: "RD", value: formatNum(this.cpu.rd, 16, 2) },
-        { name: "TEMP", value: formatNum(this.cpu.temp, 16, 4) },
-        { name: "LA", value: formatNum(this.cpu.alu.la, 16, 2) },
-        { name: "LT", value: formatNum(this.cpu.alu.lt, 16, 4) }
+        { name: "pc", value: formatNum(this.cpu.pc, 16, 4) },
+        { name: "bus", value: formatNum(this.cpu.bus, 16, 4) },
+        { name: "ir", value: formatNum(this.cpu.ir, 16, 4) },
+        { name: "rr", value: formatNum(this.cpu.rr, 16, 2) },
+        { name: "rd", value: formatNum(this.cpu.rd, 16, 2) },
+        { name: "temp", value: formatNum(this.cpu.temp, 16, 4) },
+        { name: "la", value: formatNum(this.cpu.alu.la, 16, 2) },
+        { name: "lt", value: formatNum(this.cpu.alu.lt, 16, 4) }
       ];
     },
     registerRight() {
@@ -108,6 +109,34 @@ export default {
     }
   },
   methods: {
+    // 创建一个cpu，使用Proxy检测其中数据的变动并在变化时发送事件
+    createCpu() {
+      const cpu = new Cpu();
+      const handler = {
+        set(target, key, value, receiver) {
+          if (
+            ["pc", "bus", "ir", "rr", "rd", "temp", "la", "lt"].indexOf(key) !==
+              -1 ||
+            Constant.REGISTERS.indexOf(key) !== -1 ||
+            ["ZF", "NF", "CF", "VF", "SF", "HF", "TF", "IF"].indexOf(key) !== -1
+          ) {
+            eventBus.$emit("register-change", {
+              target,
+              key,
+              value,
+              receiver
+            });
+          }
+
+          return Reflect.set(target, key, value, receiver);
+        }
+      };
+
+      cpu.register = new Proxy(cpu.register, handler);
+      cpu.sr = new Proxy(cpu.sr, handler);
+      return new Proxy(cpu, handler);
+    },
+
     run() {
       this.auto = setInterval(() => {
         if (!this.step()) {
@@ -154,7 +183,7 @@ export default {
 
     clear() {
       // 清空
-      this.cpu = new Cpu();
+      this.cpu = this.createCpu();
       this.mInstructions = [];
       this.history = [];
     },

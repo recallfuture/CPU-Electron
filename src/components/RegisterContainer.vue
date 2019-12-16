@@ -20,6 +20,7 @@
 
 <script>
 import { formatNum } from "../utils";
+import eventBus from "../event-bus";
 import * as move from "move-js";
 
 export default {
@@ -39,6 +40,29 @@ export default {
       default: () => []
     }
   },
+
+  mounted() {
+    eventBus.$on("register-change", ({ key }) => {
+      if (typeof this.nameHash[key] !== "undefined") {
+        this.animate(this.nameHash[key]);
+      }
+    });
+  },
+
+  destroyed() {
+    eventBus.$off("register-change");
+  },
+
+  computed: {
+    nameHash() {
+      const result = {};
+      this.items.forEach((value, index) => {
+        result[value.name] = index;
+      });
+      return result;
+    }
+  },
+
   methods: {
     formatNum,
 
@@ -56,21 +80,21 @@ export default {
         .pop()
         .end();
     }
-  },
-  watch: {
-    items: {
-      handler: function(newValue, oldValue) {
-        // 找到变动的数值，并在其上显示动画
-        newValue.forEach((val, index) => {
-          const old = oldValue[index];
-          if (val.name !== old.name || val.value !== old.value) {
-            this.animate(index);
-          }
-        });
-      },
-      deep: true
-    }
   }
+  // watch: {
+  //   items: {
+  //     handler: function(newValue, oldValue) {
+  //       // 找到变动的数值，并在其上显示动画
+  //       newValue.forEach((val, index) => {
+  //         const old = oldValue[index];
+  //         if (val.name !== old.name || val.value !== old.value) {
+  //           this.animate(index);
+  //         }
+  //       });
+  //     },
+  //     deep: true
+  //   }
+  // }
 };
 </script>
 
