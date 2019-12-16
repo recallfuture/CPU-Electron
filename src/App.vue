@@ -61,7 +61,7 @@ export default {
   name: "app",
   data() {
     return {
-      cpu: this.createCpu(),
+      cpu: this.createProxy(new Cpu()),
 
       fileContent: "",
       instructions: [],
@@ -109,9 +109,8 @@ export default {
     }
   },
   methods: {
-    // 创建一个cpu，使用Proxy检测其中数据的变动并在变化时发送事件
-    createCpu() {
-      const cpu = new Cpu();
+    // 为cpu创建Proxy，检测其中数据的变动并在变化时发送事件
+    createProxy(cpu) {
       const handler = {
         set(target, key, value, receiver) {
           if (
@@ -158,7 +157,7 @@ export default {
       }
 
       const item = this.history.pop();
-      this.cpu = item.cpu;
+      this.cpu = this.createProxy(item.cpu);
       this.mInstructions = item.mInstructions;
     },
 
@@ -187,7 +186,7 @@ export default {
 
     clear() {
       // 清空
-      this.cpu = this.createCpu();
+      this.cpu = this.createProxy(new Cpu());
       this.mInstructions = [];
       this.history = [];
     },
